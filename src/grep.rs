@@ -9,7 +9,7 @@ pub fn grep(line: &str, p: &Pattern) -> (Vec<usize>, bool) {
     let mut k = m-1;
     let mut pk = m-1;
     while k < n {
-        if pk == 0 {
+        if p.pattern.chars().count() > 1 && pk == 0 || p.pattern.chars().count() == 1 && p.pattern.chars().nth(0) == line.chars().nth(k) {
             res.push(k);
             k += m;
             pk = m-1;
@@ -62,7 +62,6 @@ impl Pattern {
     }
 }
 
-// test grep
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -72,6 +71,22 @@ mod tests {
         let p = Pattern::new("ab");
         let (indices, found) = grep("ababab", &p);
         assert_eq!(indices, vec![0, 2, 4]);
+        assert_eq!(found, true);
+    }
+
+    #[test]
+    fn test_grep_single_letter_pattern() {
+        let p = Pattern::new("a");
+        let (indices, found) = grep("ababab", &p);
+        assert_eq!(indices, vec![0, 2, 4]);
+        assert_eq!(found, true);
+    }
+
+    #[test]
+    fn test_grep_longer_pattern() {
+        let p = Pattern::new("abc");
+        let (indices, found) = grep("abdabcabc", &p);
+        assert_eq!(indices, vec![3, 6]);
         assert_eq!(found, true);
     }
 
