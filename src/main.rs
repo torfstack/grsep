@@ -1,5 +1,6 @@
 mod input;
 mod grep;
+mod output;
 
 use clap::Parser;
 
@@ -18,16 +19,21 @@ fn main() {
     let pattern = grep::Pattern::new(&args.pattern);
     let filename = &args.file;
 
-    let input: Box<dyn input::Source> = match filename {
+    let mut input: Box<dyn input::Source> = match filename {
         Some(f) => Box::new(input::File::new(f)),
         None => Box::new(input::Stdin::new()),
     };
 
     let buf = &mut String::new();
-    while input.next_line(buf) > 0 {
-        let (res, found) = grep::grep(&buf, &pattern);
+    let mut i = 0;
+    while input.next_line(buf) > -1 {
+        let trimmed = buf.trim();
+        let (res, found) = grep::grep(&trimmed, &pattern);
         if found {
-            println!("{:?}", res);
-        }
+            print!("Line {}: ", i);
+            output::pretty_print(&trimmed, args.pattern.len(), res);
+        };
+        i += 1;
+        buf.clear();
     }
 }

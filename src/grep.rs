@@ -76,9 +76,9 @@ mod tests {
 
     #[test]
     fn test_grep_single_letter_pattern() {
-        let p = Pattern::new("a");
+        let p = Pattern::new("b");
         let (indices, found) = grep("ababab", &p);
-        assert_eq!(indices, vec![0, 2, 4]);
+        assert_eq!(indices, vec![1, 3, 5]);
         assert_eq!(found, true);
     }
 
