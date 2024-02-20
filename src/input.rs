@@ -24,15 +24,15 @@ impl Source for File {
 }
 
 impl File {
-    pub fn new(filename: &str) -> File {
+    pub fn new(filename: &str) -> Option<File> {
         let file = std::fs::File::open(filename);
         match file {
             Ok(f) => {
-                File {
+                Some(File {
                     reader: std::io::BufReader::new(f),
-                }
+                })
             }
-            Err(_) => panic!("File not found")
+            Err(_) => None,
         }
     }
 }
