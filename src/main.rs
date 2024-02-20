@@ -2,6 +2,7 @@ mod input;
 mod grep;
 mod output;
 
+use std::{env, io};
 use clap::Parser;
 
 #[derive(Parser, Debug)]
@@ -15,25 +16,18 @@ struct Args {
 }
 
 fn main() {
-    let args: Args = Args::parse();
-    let pattern = grep::Pattern::new(&args.pattern);
-    let filename = &args.file;
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 2 {
+        eprintln!("Usage: {} <pattern>", args[0]);
+        std::process::exit(1);
+    }
+    let pattern = grep::Pattern::new(&args[1]);
 
-    let mut input: Box<dyn input::Source> = match filename {
-        Some(f) => Box::new(input::File::new(f)),
-        None => Box::new(input::Stdin::new()),
-    };
-
-    let buf = &mut String::new();
-    let mut i = 0;
-    while input.next_line(buf) > -1 {
-        let trimmed = buf.trim();
-        let (res, found) = grep::grep(&trimmed, &pattern);
+    for line in io::stdin().lines() {
+        let line = line.unwrap();
+        let (res, found) = grep::grep(&line, &pattern);
         if found {
-            print!("Line {}: ", i);
-            output::pretty_print(&trimmed, args.pattern.len(), res);
-        };
-        i += 1;
-        buf.clear();
+            output::pretty_print(&line, pattern.length(), res);
+        }
     }
 }

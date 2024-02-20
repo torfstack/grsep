@@ -29,6 +29,7 @@ pub fn grep(line: &str, p: &Pattern) -> (Vec<usize>, bool) {
 }
 
 
+#[derive(Debug)]
 pub struct Pattern {
     pattern: String,
     exist: Vec<usize>,
@@ -48,6 +49,10 @@ impl Pattern {
 
     pub fn contains(&self, c: char) -> bool {
         self.exist[c as usize] == 1
+    }
+
+    pub fn length(&self) -> usize {
+        self.pattern.len()
     }
 
     fn preprocess(&mut self) {
