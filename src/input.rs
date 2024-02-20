@@ -1,4 +1,4 @@
-use std::io::BufRead;
+use std::io::{BufRead, Lines, StdinLock};
 
 pub trait Source {
     fn next_line(&mut self, buf: &mut String) -> isize;
@@ -33,6 +33,30 @@ impl File {
                 }
             }
             Err(_) => panic!("File not found")
+        }
+    }
+}
+
+pub struct Stdin {
+    reader: Lines<StdinLock<'static>>
+}
+
+impl Source for Stdin {
+    fn next_line(&mut self, buf: &mut String) -> isize {
+        match self.reader.next() {
+            Some(Ok(line)) => {
+                buf.push_str(&line);
+                line.len() as isize
+            }
+            _ => -1,
+        }
+    }
+}
+
+impl Stdin {
+    pub fn new() -> Stdin {
+        Stdin {
+            reader: std::io::stdin().lines(),
         }
     }
 }

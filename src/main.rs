@@ -2,32 +2,28 @@ mod input;
 mod grep;
 mod output;
 
-use std::{env, io};
-use clap::Parser;
-
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    #[arg(short = 'p', long = "pattern")]
-    pattern: String,
-
-    #[arg(short = 'f', long = "file")]
-    file: Option<String>,
-}
+use std::env;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        eprintln!("Usage: {} <pattern>", args[0]);
+        eprintln!("Usage: {} <pattern> [file]", args[0]);
         std::process::exit(1);
     }
     let pattern = grep::Pattern::new(&args[1]);
+    let mut input = if args.len() == 2 {
+        Box::new(input::Stdin::new()) as Box<dyn input::Source>
+    } else {
+        Box::new(input::File::new(&args[2])) as Box<dyn input::Source>
+    };
 
-    for line in io::stdin().lines() {
-        let line = line.unwrap();
-        let (res, found) = grep::grep(&line, &pattern);
+    let mut buf = String::new();
+    while input.next_line(&mut buf) != -1 {
+        let trimmed = buf.trim();
+        let (res, found) = grep::grep(&trimmed, &pattern);
         if found {
-            output::pretty_print(&line, pattern.length(), res);
+            output::pretty_print(&trimmed, pattern.length(), res);
         }
+        buf.clear();
     }
 }
